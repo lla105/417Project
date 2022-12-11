@@ -1,9 +1,7 @@
 # 417Project
 #CMPT 417 Project
 > Group members: 
-### William Horvath 
-### Trung Hieu Le 
-### Leon Lee
+>> William Horvath, Trung Hieu Le, Leon Lee
 
 ## Introduction:
 > We propose for our group project to implement and test the Safe Interval Path Planning (SIPP) search algorithm in Python, in the context of the multi-agent path finding (MAPF) algorithms Cooperative A* and Conflict-Based Search (CBS). We aim to combine, refine, and extend our individual projects on MAPF by modularizing the single-agent planner component to work with both A* (original) and SIPP (our new implementation) algorithms. After implementing SIPP, we would like to test/benchmark the resultant program under the four combinations of (A*, SIPP) x (Coop-A*, CBS) on a battery of test instances, which would include instances given in the individual assignment and instances that we have crafted.
