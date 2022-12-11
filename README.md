@@ -13,4 +13,4 @@
 4. Get basic A* to run as single agent planner.
 5. Turn pseudo SIPP into python SIPP, get it to run as a single agent planner.
 > ```more to come here...```
-N. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
+> N. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
