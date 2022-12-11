@@ -1,4 +1,3 @@
-# 417Project
 # CMPT 417 Project
 # Group members: 
 > William Horvath, Trung Hieu Le, Leon Lee
