@@ -22,4 +22,5 @@
 ## Findings:
 ### Prioritized Planning Space Time A* (Left) VS SIPP (Right)
 https://user-images.githubusercontent.com/105393685/206966008-a897e7b0-b996-4930-8160-699ef9a8cf12.mov
-Given same map, same number of agnet, same obstacle, same goal, the path taken is exactly the same.
+
+> Given same map, same number of agnet, same obstacle, same goal, the path taken is exactly the same.
