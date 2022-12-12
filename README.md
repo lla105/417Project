@@ -17,3 +17,9 @@
 8. SIPP with Cooperative A*
 9. SIPP with CBS
 10. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
+
+
+## Findings:
+### Prioritized Planning Space Time A* (Left) VS SIPP (Right)
+https://user-images.githubusercontent.com/105393685/206966008-a897e7b0-b996-4930-8160-699ef9a8cf12.mov
+Given same map, same number of agnet, same obstacle, same goal, the path taken is exactly the same.
