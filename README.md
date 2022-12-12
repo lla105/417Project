@@ -23,4 +23,10 @@
 ### Prioritized Planning Space Time A* (Left) VS SIPP (Right)
 https://user-images.githubusercontent.com/105393685/206966008-a897e7b0-b996-4930-8160-699ef9a8cf12.mov
 
-> Given same map, same number of agnet, same obstacle, same goal, the path taken is exactly the same.
+> Case 1: Given same map, same number of agent, same obstacle, same goal, the path taken is exactly the same.
+
+https://user-images.githubusercontent.com/105393685/206967300-4673e499-7e6b-49e0-8287-7ed31c311029.mov
+
+> Case 2: Given same map, same # of agents, same obstacles, same goal, the path taken are different. Prioritized Planning Space Time A* moves Agent 1 out of the way for Agent 0, while SIPP just lets Agent 1 sit still, resulting in a collision.
+
+
