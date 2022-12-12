@@ -8,9 +8,12 @@
 
 ## To-Do List:
 1. Setup working environment, with basic MAPF working(with space_time A* & CBS set up)
-2. Get Coop A* to run as Multi agent path finder. 
-3. get CBS to run as multi agent path finder. 
+2. ~~Get Coop A* to run as Multi agent path finder. ~~
+3. ~~Get CBS to run as multi agent path finder. ~~
 4. Get basic A* to run as single agent planner.
 5. Turn pseudo SIPP into python SIPP, get it to run as a single agent planner.
-> ```more to come here...```
-> N. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
+6. A* with Cooperative A*
+7. A* with CBS
+8. SIPP with Cooperative A*
+9. SIPP with CBS
+10. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
