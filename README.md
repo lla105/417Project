@@ -10,14 +10,20 @@
 1. ~~Setup working environment, with basic MAPF working(with space_time A* & CBS set up)~~
 2. ~~Get Coop A* to run as Multi agent path finder.~~
 3. ~~Get CBS to run as multi agent path finder.~~
-4. Get basic A* to run as single agent planner.
-5. Turn pseudo SIPP into python SIPP, get it to run as a single agent planner.
-6. A* with Cooperative A*
-7. A* with CBS
-8. SIPP with Cooperative A*
-9. SIPP with CBS
-10. Yield result. With # of nodes, time taken, memories used, h(n) used, # of agents, obstacles in mind, write report to attempt to explain the differences in these results.
-
+4. ~~Get basic A* to run as single agent planner.
+5. ~~Get SIPP on run as single agent. (local planner plans path instead of agents)
+6. Turn pseudo SIPP into python SIPP, get it to run as a single agent planner.
+7. A* with Cooperative A*
+8. A* with CBS
+9. SIPP with Cooperative A*
+10. SIPP with CBS
+11. REPORT 1: Write an intro containing precise mathematical description of the problem.
+12. REPORT 2: An implementation section containing detailed description of the algo we are using. Include pseudocode for each algo. Document any changes to make the algo fit in.
+13. REPORT 3: A methodology section about how we measure the performance. Especially the classes of instances used. (eg: instance advantage? # of agents? % of obstacles? etc. eg2: Were any of the algos yielding suboptimal solutions?)
+14. REPORT 4: Describe the environment. Language? Language version? OS? Processor? memory?
+15. REPORT 5: Run our experiements & display the results (Using graphs/videos). Include # of solutions expanded, solution costs etc.
+16. REPORT 6: Conclusion: Was there a particular instance that favors a particular algo?
+17. REPORT 7: Bibliography section: citations for the algos + instances that we didn't generate ourselves.
 
 ## Findings:
 ### Prioritized Planning Space Time A* (Left) VS SIPP (Right)
