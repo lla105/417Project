@@ -35,5 +35,7 @@ https://user-images.githubusercontent.com/105393685/206967300-4673e499-7e6b-49e0
 
 > Case 2: Given same map, same # of agents, same obstacles, same goal, the path taken are different. Prioritized Planning Space Time A* moves Agent 1 out of the way for Agent 0, while SIPP just lets Agent 1 sit still, resulting in a collision.
 
+## Some Insight regarding SIPP and A* we could include in our final report ( Notes ):
+> A* and SIPP both are methods sued to find a path between two points in a map. However, SIPP is designed to avoid path and obstacles. SIPP can be designed to navigate around static AND dynamic obstacles. A*, as far as we know, do not do this. 
 # Which now begs the question:
 <img src="https://user-images.githubusercontent.com/105393685/207136994-dd7f26eb-3c6f-47f3-905d-fc6e14c6bdcc.jpg" class="center" width="200"/>
