@@ -1,9 +1,193 @@
 import heapq
+from math import fabs
+from graph_generation import SIPPGraph, State
 
-def move(loc, dir):
-    directions = [(0, -1), (1, 0), (0, 1), (-1, 0), (0, 0)]
-    return loc[0] + directions[dir][0], loc[1] + directions[dir][1]
+"""
+A* single agent planner implementation  
 
+author(s):  github.com/nicofretti,      William Horvath (github.com/bolded)
+            repo: nicofretti/MAPF       repo: lla105/417Project
+"""
+
+class AStarPlanner(object):
+    def __init__(self, my_map):
+        """ 
+        my_map      - binary obstacle map
+        start_loc   - start position
+        goal_loc    - goal position
+        agent       - the agent that is being re-planned
+        constraints - constraints defining where robot should or cannot go at each timestep
+        """
+        
+        self.my_map = my_map
+
+        #self.CPU_time = 0
+
+        # compute heuristics for the low-level search
+        # self.heuristics = []
+        # for goal in self.goals:
+        #     self.heuristics.append(compute_heuristics(my_map, goal))
+
+
+    def build_constraint_table(self, constraints, agent):
+        ##############################
+        # Return a table that constains the list of constraints of
+        # the given agent for each time step. The table can be used
+        # for a more efficient constraint violation check in the 
+        # is_constrained function.
+        c_table = dict()
+        for c in constraints:
+            # we need to consider only the constraints for the given agent
+            # 4.1 Supporting positive constraints
+            if (not 'positive' in c.keys()):
+                c['positive'] = False
+            if c['agent'] == agent:
+                timestep = c['timestep']
+                if timestep not in c_table:
+                    c_table[timestep] = [c]
+                else:
+                    c_table[timestep].append(c)
+        return c_table
+
+
+    def get_plan(self, goal_node):
+        path = []
+        curr = goal_node
+        while curr is not None:
+            path.append(curr['loc'])
+            curr = curr['parent']
+        path.reverse()
+        return path
+
+
+    def flatten_constraints(self, list_of_constraints_list):
+        constraints = []
+        for constr_list in list_of_constraints_list:
+            for c in constr_list:
+                constraints.append(c)
+        return constraints
+
+
+    def is_constrained(self, curr_loc, next_loc, next_time, constraint_table):
+        ##############################
+        # Check if a move from curr_loc to next_loc at time step next_time violates
+        # any given constraint. For efficiency the constraints are indexed in a constraint_table
+        # by time step, see build_constraint_table.
+        if next_time in constraint_table:
+            constraints = constraint_table[next_time]
+            for c in constraints:
+                if [next_loc] == c['loc'] or [curr_loc, next_loc] == c['loc']:
+                    return True
+        else:
+            constraints = [c for t, c in constraint_table.items() if t < next_time]
+            constraints = self.flatten_constraints(constraints)
+            for c in constraints:
+                if [next_loc] == c['loc'] and c['final']:
+                    return True
+        return False
+
+
+    def is_goal_constrained(self, goal_loc, timestep, constraint_table):
+        """
+        checks if there's a constraint on the goal in the future.
+        goal_loc            - goal location
+        timestep            - current timestep
+        constraint_table    - generated constraint table for current agent
+        """
+        constraints = [c for t, c in constraint_table.items() if t > timestep]
+        constraints = self.flatten_constraints(constraints)
+        for c in constraints:
+            if [goal_loc] == c['loc']:
+                return True
+        return False
+
+
+    def push_node(self, open_list, node):
+        heapq.heappush(open_list, (node['g_val'] + node['h_val'], node['h_val'], node['loc'], node))
+
+
+    def pop_node(self, open_list):
+        _, _, _, curr = heapq.heappop(open_list)
+        return curr
+
+
+    def compare_nodes(self, n1, n2):
+        """Return true is n1 is better than n2."""
+        return n1['g_val'] + n1['h_val'] < n2['g_val'] + n2['h_val']
+
+
+    def a_star(self, start_loc, goal_loc, h_values, agent, constraints):
+        """ 
+        my_map      - binary obstacle map
+        start_loc   - start position
+        goal_loc    - goal position
+        agent       - the agent that is being re-planned
+        constraints - constraints defining where robot should or cannot go at each timestep
+        """
+
+        open_list = []
+        closed_list = dict()
+        h_value = h_values[start_loc]
+        c_table = self.build_constraint_table(constraints, agent)
+        root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'time': 0}
+        self.push_node(open_list, root)
+        closed_list[(start_loc, 0)] = root
+        max_map_width = max([len(e) for e in self.my_map])
+        while len(open_list) > 0:
+            curr = self.pop_node(open_list)
+
+            if curr['loc'] == goal_loc and not self.is_goal_constrained(goal_loc, curr['time'], c_table):
+                return self.get_plan(curr)
+            for direction in range(5):
+                # directions 0-3: the agent is moving, direction 4: the agent is still
+                if direction < 4:
+                    child_loc = move(curr['loc'], direction)
+                    # check if the child location is outsite the map or the agent go against an obstacle
+                    if child_loc[0] < 0 or child_loc[1] < 0 or \
+                            child_loc[0] >= len(self.my_map) or child_loc[1] >= max_map_width or \
+                            self.my_map[child_loc[0]][child_loc[1]]:
+                        continue
+                    child = {'loc': child_loc,
+                            'g_val': curr['g_val'] + 1,
+                            'h_val': h_values[child_loc],
+                            'parent': curr,
+                            'time': curr['time'] + 1}
+                else:
+                    # the agent remains still
+                    child = {'loc': curr['loc'],
+                            'g_val': curr['g_val'] + 1,  # remaining in the same cell has a cost
+                            'h_val': curr['h_val'],
+                            'parent': curr,
+                            'time': curr['time'] + 1}
+                # check if the child violates the constraints
+                if self.is_constrained(curr['loc'], child['loc'], child['time'], c_table):
+                    continue
+                if (child['loc'], child['time']) in closed_list:
+                    existing_node = closed_list[(child['loc'], child['time'])]
+                    if self.compare_nodes(child, existing_node):
+                        closed_list[(child['loc'], child['time'])] = child
+                        self.push_node(open_list, child)
+                else:
+                    closed_list[(child['loc'], child['time'])] = child
+                    self.push_node(open_list, child)
+
+        return None  # Failed to find solutions
+    
+    def get_path(self, start_loc, goal_loc, h_values, agent, constraints):
+        return self.a_star(start_loc, goal_loc, h_values, agent, constraints)
+
+
+# '''
+# Helper functions for the rest of the codebase
+# '''
+
+def get_location(path, time):
+    if time < 0:
+        return path[0]
+    elif time < len(path):
+        return path[time]
+    else:
+        return path[-1]  # wait at the goal location
 
 def get_sum_of_cost(paths):
     rst = 0
@@ -11,6 +195,9 @@ def get_sum_of_cost(paths):
         rst += len(path) - 1
     return rst
 
+def move(loc, direction):
+    directions = [(0, -1), (1, 0), (0, 1), (-1, 0)]
+    return loc[0] + directions[direction][0], loc[1] + directions[direction][1]
 
 def compute_heuristics(my_map, goal):
     # Use Dijkstra to build a shortest-path tree rooted at the goal location
@@ -21,12 +208,11 @@ def compute_heuristics(my_map, goal):
     closed_list[goal] = root
     while len(open_list) > 0:
         (cost, loc, curr) = heapq.heappop(open_list)
-        for dir in range(4):
-            child_loc = move(loc, dir)
+        for direction in range(4):
+            child_loc = move(loc, direction)
             child_cost = cost + 1
-            if child_loc[0] < 0 or child_loc[0] >= len(my_map) \
-               or child_loc[1] < 0 or child_loc[1] >= len(my_map[0]):
-               continue
+            if child_loc[0] < 0 or child_loc[0] >= len(my_map) or child_loc[1] < 0 or child_loc[1] >= len(my_map[0]):
+                continue
             if my_map[child_loc[0]][child_loc[1]]:
                 continue
             child = {'loc': child_loc, 'cost': child_cost}
@@ -46,175 +232,138 @@ def compute_heuristics(my_map, goal):
         h_values[loc] = node['cost']
     return h_values
 
+"""
+SIPP single agent planner implementation  
 
-def build_constraint_table(constraints, agent):
-    ##############################
-    # Task 1.2/1.3: Return a table that constains the list of constraints of
-    #               the given agent for each time step. The table can be used
-    #               for a more efficient constraint violation check in the 
-    #               is_constrained function.
-    constraint_table = dict()
-    pos_constraint_table = dict()
-    for constraint in constraints:
-        if not ("positive" in constraint.keys()):
-            constraint["positive"] = False
-        if constraint['agent'] == agent:
-            if constraint["positive"] == False:
-                if constraint['timestep'] in constraint_table.keys():
-                    temp = list()
-                    temp = constraint_table[constraint['timestep']]
-                    temp.append(constraint['loc'])
-                    constraint_table[constraint['timestep']] = temp
-                else:
-                    constraint_table[constraint['timestep']] = [constraint['loc']]
-            else: 
-                if constraint['timestep'] in pos_constraint_table.keys():
-                    temp = list()
-                    temp = pos_constraint_table[constraint['timestep']]
-                    temp.append(constraint['loc'])
-                    pos_constraint_table[constraint['timestep']] = temp
-                else:
-                    pos_constraint_table[constraint['timestep']] = [constraint['loc']]
+author(s):  Ashwin Bose (github.com/atb033),            github.com/WheelChan,                       
+            repo: atb033/multi_agent_path_planning      repo: WheelChan/Multi-Agent-Path-Finding    
 
-    return constraint_table, pos_constraint_table
+            William Horvath (github.com/bolded)
+            repo: lla105/417Project
 
-
-def get_location(path, time):
-    if time < 0:
-        return path[0]
-    elif time < len(path):
-        return path[time]
-    else:
-        return path[-1]  # wait at the goal location
-
-
-def get_path(goal_node):
-    path = []
-    curr = goal_node
-    while curr is not None:
-        path.append(curr['loc'])
-        curr = curr['parent']
-    path.reverse()
-    return path
-
-
-def is_constrained(curr_loc, next_loc, next_time, constraint_table):
-    ##############################
-    # Task 1.2/1.3: Check if a move from curr_loc to next_loc at time step next_time violates
-    #               any given constraint. For efficiency the constraints are indexed in a constraint_table
-    #               by time step, see build_constraint_table.
-    
-    
-    #extend goal locations to all t after goal task #2.3 
-    #only for the 2 agent case, will fail for 3+ agents
-
-    # if len(constraint_table.keys()) != 0:
-    #     if next_time > max(constraint_table.keys()):
-    #         next_time = max(constraint_table.keys())
-
-    if next_time in constraint_table:
-        for loc in constraint_table[next_time]:
-            if len(loc) == 1:
-                if loc == [next_loc]:
-                    return True
-            elif loc == [curr_loc, next_loc]:
-                return True
-    return False
-
-def is_pos_constrained(curr_loc, next_loc, next_time, pos_constraint_table):
-    #false = failed, not in correct loc at timestep
-
-    if next_time in pos_constraint_table:
-        for loc in pos_constraint_table[next_time]:
-            if len(loc) == 1:
-                if loc == [next_loc]:
-                    return True
-            elif loc == [curr_loc, next_loc]:
-                return True
-    else:
-        return True
-
-    return False
-
-def push_node(open_list, node):
-    heapq.heappush(open_list, (node['g_val'] + node['h_val'], node['h_val'], node['loc'], node))
-
-
-def pop_node(open_list):
-    _, _, _, curr = heapq.heappop(open_list)
-    return curr
-
-
-def compare_nodes(n1, n2):
-    """Return true is n1 is better than n2."""
-    return n1['g_val'] + n1['h_val'] < n2['g_val'] + n2['h_val']
-
-
-def a_star(my_map, start_loc, goal_loc, h_values, agent, constraints):
-    """ my_map      - binary obstacle map
-        start_loc   - start position
-        goal_loc    - goal position
-        agent       - the agent that is being re-planned
-        constraints - constraints defining where robot should or cannot go at each timestep
-    """
-
-    ##############################
-    # Task 1.1: Extend the A* search to search in the space-time domain
-    #           rather than space domain, only.
-    constraint_table,pos_constraint_table = build_constraint_table(constraints,agent)
-    #print("pos:", pos_constraint_table)
-    #print("reg:", constraint_table)
-    open_list = []
-    closed_list = dict()
-    if len(constraint_table.keys()) != 0:
-        earliest_goal_timestep = max(constraint_table.keys())
-    else:
-        earliest_goal_timestep = 0
-    h_value = h_values[start_loc]
-    root = {'loc': start_loc, 'g_val': 0, 'h_val': h_value, 'parent': None, 'timestep':0}
-    push_node(open_list, root)
-    closed_list[(root['loc'],root['timestep'])] = root
-
-    #task 2.4 m,n map demensions
-    m = 6
-    n = 7
-    upperboundTimestep = (1+agent)*m*n
-    upperboundTimestep = 15
-    while len(open_list) > 0:
+SIPP article: https://doi.org/10.1109/ICRA.2011.5980306
+"""
+class SafeIntervalPlanner(SIPPGraph):
+    def __init__(self, my_map, starts, goals, h_values, dyn_obstacles):
+        SIPPGraph.__init__(self, my_map, dyn_obstacles)
         
-        #Task 2.4
-        curr = pop_node(open_list)
-        #print("curr", curr)
-        if curr['timestep'] > upperboundTimestep:
-            print("Hit upper bound:",upperboundTimestep, "timesteps" )
-            return None  # Failed to find solutions
+        self.start = starts
+        self.goal = goals
+        self.hvalue = h_values
+        
+        self.open = []
+        self.max_path = 0
 
-        #############################
-        # Task 1.4: Adjust the goal test condition to handle goal constraints
-        if curr['loc'] == goal_loc and curr['timestep'] >= earliest_goal_timestep:          
-            return get_path(curr)
-        for dir in range(5):
-            child_loc = move(curr['loc'], dir)
-            #for test 1 - 50, due to lack of surrounding '@'s
-            if child_loc[0] < 0 or  child_loc[1] < 0 or  child_loc[0] > 7 or  child_loc[1] > 7 :
-                continue
-            if my_map[child_loc[0]][child_loc[1]] or is_constrained(curr['loc'],child_loc,curr['timestep']+1,constraint_table):
-                continue
-            if not is_pos_constrained(curr['loc'],child_loc,curr['timestep']+1,pos_constraint_table):
-                #print("positive con broken")
-                continue
-            child = {'loc': child_loc,
-                    'g_val': curr['g_val'] + 1,
-                    'h_val': h_values[child_loc],
-                    'parent': curr,
-                    'timestep':curr['timestep']+ 1}
-            if (child['loc'], child['timestep']) in closed_list:
-                existing_node = closed_list[(child['loc'],child['timestep'])]
-                if compare_nodes(child, existing_node):
-                    closed_list[(child['loc'],child['timestep'])] = child
-                    push_node(open_list, child)
-            else:
-                closed_list[(child['loc'],child['timestep'])] = child
-                push_node(open_list, child)
+    def get_successors(self, state):
+        successors = []
+        m_time = 1
+        neighbour_list = self.get_valid_neighbours(state.position)
+
+        for neighbour in neighbour_list:
+            start_t = state.time + m_time
+            end_t = state.interval[1] + m_time
+            for i in self.sipp_graph[neighbour].interval_list:
+                if i[0] > end_t or i[1] < start_t:
+                    continue
+                time = max(start_t, i[0]) 
+                s = State(neighbour, time, i)
+                successors.append(s)
+        return successors
+
+    def get_heuristic(self, position):
+        return fabs(position[0] - self.goal[0]) + fabs(position[1]-self.goal[1])
+
+    def get_first(self, element):
+        return element[0]
+
+    #compute_plan + get_plan = A-star function
+    #compute_plan() determines if plan exists for specific problem and if yes, get_plan() retrieves said plan
+    def compute_plan(self):
+        self.open = []
+        goal_reached = False
+        cost = 1
+        e_nodes = 0
+        g_nodes = 0
+
+        s_start = State(self.start, 0) 
+
+        self.sipp_graph[self.start].g = 0.
+        f_start = self.get_heuristic(self.start)
+        self.sipp_graph[self.start].f = f_start
+
+        self.open.append((f_start, s_start))
+
+        #following algorithm described in original paper (fig 4)
+        while (not goal_reached):
+            # print("OPEN LIST:")
+            # print(self.open)
+            if self.open == []: 
+                # Plan not found
+                # print("Expected to this msg for no plans found")
+                return 0
+            s = self.open.pop(0)[1]
+            e_nodes += 1
+            successors = self.get_successors(s)
+
+            for successor in successors:
+                #print("Successor pos:", successor.position)
+                #print("successor g(): ", self.sipp_graph[successor.position].g)
+                #print("parent g(): ", self.sipp_graph[s.position].g + cost)
                 
-    return None  # Failed to find solutions
+                if self.sipp_graph[successor.position].g > self.sipp_graph[s.position].g + cost:
+
+                    self.sipp_graph[successor.position].g = self.sipp_graph[s.position].g + cost
+                    self.sipp_graph[successor.position].parent_state = s
+
+                    #print("Successor time: ", successor.time)
+                    #print("Max path: ", self.max_path)
+                    if successor.position == self.goal and successor.time > self.max_path:
+                        # print("Plan successfully calculated!!")
+                        goal_reached = True
+                        break
+
+                    self.sipp_graph[successor.position].f = self.sipp_graph[successor.position].g + self.get_heuristic(successor.position)
+                    self.open.append((self.sipp_graph[successor.position].f, successor))
+                    g_nodes += 1
+            
+            self.open.sort(key = self.get_first)
+            
+
+        # Tracking back
+        start_reached = False
+        self.plan = []
+        current = successor
+        while not start_reached:
+            self.plan.insert(0,current)
+            if current.position == self.start:
+                start_reached = True
+            current = self.sipp_graph[current.position].parent_state
+        # print("Expanded Nodes: ", e_nodes)
+        # print("Generated Nodes: ", g_nodes)
+        return 1
+            
+    def get_plan(self):
+        path_list = []
+
+        # first setpoint
+        setpoint = self.plan[0]
+        temp_dict = {"x":setpoint.position[0], "y":setpoint.position[1], "t":setpoint.time}
+        path_list.append(temp_dict)
+
+        for i in range(len(self.plan)-1):
+            for j in range(self.plan[i+1].time - self.plan[i].time-1):
+                x = self.plan[i].position[0]
+                y = self.plan[i].position[1]
+                t = self.plan[i].time
+                setpoint = self.plan[i]
+                temp_dict = {"x":x, "y":y, "t":t+j+1}
+                path_list.append(temp_dict)
+
+            setpoint = self.plan[i+1]
+            temp_dict = {"x":setpoint.position[0], "y":setpoint.position[1], "t":setpoint.time}
+            path_list.append(temp_dict)
+
+        #print("GET_PLAN")
+        #print(path_list)
+        return path_list
+
