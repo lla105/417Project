@@ -5,6 +5,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import argparse
 
+"""
+author(s):  github.com/nicofretti
+            repo: nicofretti/MAPF
+"""
+
 ALGORITMS = ['cbs', 'cbs_disjoint']
 THEME = 'darkgrid'
 

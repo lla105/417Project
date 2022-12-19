@@ -2,8 +2,8 @@ import time as timer
 from single_agent_planner import compute_heuristics, get_sum_of_cost, AStarPlanner
 
 ''' 
-author(s):  github.com/nicofretti,
-            repo: nicofretti/MAPF 
+author(s):  github.com/nicofretti,          William Horvath (github.com/bolded)
+            repo: nicofretti/MAPF           repo: lla105/417Project
 '''
 
 class PrioritizedPlanningSolver(object):

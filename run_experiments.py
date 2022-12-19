@@ -16,6 +16,12 @@ import random
 LOWLEVEL = "Astar"
 SOLVER = "SIPP"
 
+"""
+Driver code for benchmarking/running test instances with different solvers
+
+author(s):  github.com/nicofretti,      William Horvath (github.com/bolded)
+            repo: nicofretti/MAPF       repo: lla105/417Project
+"""
 
 def print_mapf_instance(my_map, starts, goals):
     print('Start locations')

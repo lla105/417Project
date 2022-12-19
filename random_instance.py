@@ -2,6 +2,11 @@ import random
 
 from cbs import CBSSolver_Astar
 
+"""
+author(s):  github.com/nicofretti
+            repo: nicofretti/MAPF
+"""
+
 def correct_random_map(height, width, agents, obstables_percentage):
     # Creates a random map with the given parameters
     map = [];starts = [];goals = []
