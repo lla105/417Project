@@ -13,8 +13,8 @@ import os
 import time as timer
 import random
 
-LOWLEVEL = "Astar"
-SOLVER = "SIPP"
+LOWLEVEL = "SIPP"
+SOLVER = "CBS"
 
 """
 Driver code for benchmarking/running test instances with different solvers
