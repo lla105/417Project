@@ -20,6 +20,9 @@ You can run the program like so:
 python run_experiments.py --instance instances/test4.txt --solver CBS --lowlevel Astar
 ```
 (you can also replace the instance with one of your choosing)
+<p align="center">
+    <img style="width:400px" src="outputAstar.gif"/>
+</p>
 
 ### 2 - Manually running the MAPF with CBS using SIPP as low-level search
 You can run the program like so:
@@ -27,8 +30,19 @@ You can run the program like so:
 python run_experiments.py --instance instances/test4.txt --solver CBS --lowlevel SIPP
 ```
 (you can also replace the instance with one of your choosing)
+<p align="center">
+    <img style="width:400px" src="outputSIPP.gif"/>
+</p>
 
-### 3 - Benchmarking random maps for CPU time stats
+### 3 - Other implemented choices of solver and lowlevel search
+You can run the program like so:
+```bash
+--solver Independent --lowlevel Astar
+--solver Independent --lowlevel SIPP
+--solver Prioritized --lowlevel Astar
+```
+
+### 4 - Benchmarking random maps for CPU time stats
 The benchmark is based on random maps generated at runtime which CBS using both lowlevel searches are confirmed to be able to solve within 30 seconds. For each number of agents 4,6,...,14,16, the benchmark utility generates 25 maps of a 10x10 size, with random obstacles (5% chance to be occupied) and random start/goal positions. Then, it tests CBS + both lowlevel searches to see how long they take and how many nodes they expand (under 40 seconds).
 
 You can execute the benchmark with the following command (it may take a long time):
@@ -45,7 +59,7 @@ Possible outputs can be as seen below:
     <img style="width:400px" src="expanded_nodes.png"/>
 </p>
 
-### 4 - Benchmarking random maps for success rate stats
+### 5 - Benchmarking random maps for success rate stats
 For each number of agents 4,6,...,14,16, the benchmark utility generates one map of a 10x10 size, with the position of the obstacles (5% of the map) and start/goal positions being randomized for 25 trials, and tests both lowlevel searches to see whether they are able to solve the scenario or not under 60 seconds.
 
 You can execute the benchmark with the following command (it may take a long time):
