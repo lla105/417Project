@@ -137,7 +137,7 @@ if __name__ == '__main__':
                 json.dump(result, outfile)
         if args.benchmark == "success":
             map_size = 10;obstacles_dist = .05;max_agents=16
-            max_time = 40
+            max_time = 60
             samples = 25
             start_agents = 4
             result = {}
@@ -156,9 +156,9 @@ if __name__ == '__main__':
                     print("sample {} with {} agents".format(i,agents))
                     for alg in ['cbs_astar','cbs_sipp']:
                         if alg == 'cbs_astar':
-                            solver = CBSSolver_Astar(my_map,starts,goals,max_time)
+                            solver = CBSSolver_Astar(map,starts,goals,max_time)
                         else:
-                            solver = CBSSolver_SIPP(my_map,starts,goals,max_time)
+                            solver = CBSSolver_SIPP(map,starts,goals,max_time)
                         try:
                             solver.find_solution(disjoint=True)
                             result[agents][alg]['cpu_time'][i] = round(timer.time() - solver.start_time, 2)

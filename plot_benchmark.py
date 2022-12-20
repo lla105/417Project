@@ -15,7 +15,7 @@ THEME = 'darkgrid'
 
 def plot_time_area(data, time_limit):
     """
-    Plot cpu time of the be
+    Plot cpu time of the benchmark
     """
     keys = list(data.keys())
     start,finish = int(keys[0]), int(keys[-1])+2
@@ -48,12 +48,12 @@ def plot_time_area(data, time_limit):
     plt = sns.lineplot(data=data.set_index('agents'), linewidth=2.5)
     plt.set(xlabel='Number of agents', ylabel='CPU time (s)')
     plt.axes.set_xticks(np.arange(start, finish, 2.0))
-    # CBS area
+    # CBS_AStar area
     lower = cbs_astar - std_of_mean[0]; upper = cbs_astar + std_of_mean[0]
     plt.plot(x_axis, lower, color='tab:blue', alpha=0.2)
     plt.plot(x_axis, upper, color='tab:blue', alpha=0.2)
     plt.fill_between(x_axis, lower, upper, color='tab:blue', alpha=0.2)
-    # CBS disjoint area
+    # CBS_Sipp area
     lower = cbs_sipp - std_of_mean[1]; upper = cbs_sipp + std_of_mean[1]
     plt.plot(x_axis, lower, color='tab:orange', alpha=0.2)
     plt.plot(x_axis, upper, color='tab:orange', alpha=0.2)
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         # plot based on many random instances
         json_file = open('benchmark/result.json')
         data = json.load(json_file)
-        plot_success_rate(data, 2)
+        plot_success_rate(data, 1)
         plt.show()
         plot_time_area(data, 60*2)
         plt.show()
