@@ -128,8 +128,8 @@ if __name__ == "__main__":
         # plot based on many random instances
         json_file = open('benchmark/result.json')
         data = json.load(json_file)
-        plot_success_rate(data, 1)
-        plt.show()
+        #plot_success_rate(data, 1)
+        #plt.show()
         plot_time_area(data, 60*2)
         plt.show()
         plot_expanded_nodes(data, 500)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         # plot based of one map with different instances
         json_file = open('benchmark/result_success.json')
         data = json.load(json_file)
-        plot_success_rate(data,5)
+        plot_success_rate(data,1)
         plt.show()
-        plot_time_area(data, 60*5)
+        plot_time_area(data, 1)
         plt.show()
