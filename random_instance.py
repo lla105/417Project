@@ -1,13 +1,13 @@
 import random
 
-from cbs import CBSSolver_Astar
+from cbs import CBSSolver_Astar, CBSSolver_SIPP
 
 """
 author(s):  github.com/nicofretti
             repo: nicofretti/MAPF
 """
 
-def correct_random_map(height, width, agents, obstables_percentage):
+def correct_random_map(height, width, agents, obstacles_percentage):
     # Creates a random map with the given parameters
     map = [];starts = [];goals = []
     positions = [(x,y) for x in range(height) for y in range(width)]
@@ -20,7 +20,7 @@ def correct_random_map(height, width, agents, obstables_percentage):
     for i in range(height):
         map.append([])
         for j in range(width):
-            if (i,j) in starts or (i,j) in goals or random.random() > obstables_percentage:
+            if (i,j) in starts or (i,j) in goals or random.random() > obstacles_percentage:
                 # mark as obstacle
                 map[i].append(False)
             else:
@@ -28,15 +28,25 @@ def correct_random_map(height, width, agents, obstables_percentage):
                 map[i].append(True)
     # Check if the map is valid
     try:
-        solver = CBSSolver_Astar(map, starts, goals, 60*10) # exists a solution in 5 minutes
+        solver = CBSSolver_Astar(map, starts, goals, 30) # exists a solution in 30 seconds
+        solver.find_solution(disjoint=True)
+    except BaseException as e:
+        # Map is not valid
+        print(f"No solution (CBS) in 30 seconds, new map {height}x{width} {agents} agents {obstacles_percentage} obs%")
+        # try again
+        return correct_random_map(height, width, agents, obstacles_percentage)
+    # Make sure SIPP can also solve the same map (otherwise it's not useful for performance benchmark)
+    try: 
+        solver2 = CBSSolver_SIPP(map, starts, goals, 30) # exists a solution in 30 seconds
         solver.find_solution()
     except BaseException as e:
         # Map is not valid
-        # print("No solution, new map")
-        return correct_random_map(height, width, agents, obstables_percentage)
+        print(f"No solution (SIPP) in 30 seconds, new map {height}x{width} {agents} agents {obstacles_percentage} obs%")
+        # try again
+        return correct_random_map(height, width, agents, obstacles_percentage)
     return map, starts, goals
 
-def random_map(height, width, agents, obstables_percentage):
+def random_map(height, width, agents, obstacles_percentage):
     # Creates a random map with the given parameters
     map = [];starts = [];goals = []
     positions = [(x,y) for x in range(height) for y in range(width)]
@@ -49,7 +59,7 @@ def random_map(height, width, agents, obstables_percentage):
     for i in range(height):
         map.append([])
         for j in range(width):
-            if (i,j) in starts or (i,j) in goals or random.random() > obstables_percentage:
+            if (i,j) in starts or (i,j) in goals or random.random() > obstacles_percentage:
                 # mark as obstacle
                 map[i].append(False)
             else:

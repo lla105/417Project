@@ -10,7 +10,7 @@ author(s):  github.com/nicofretti
             repo: nicofretti/MAPF
 """
 
-ALGORITMS = ['cbs', 'cbs_disjoint']
+ALGORITHMS = ['cbs_astar', 'cbs_sipp']
 THEME = 'darkgrid'
 
 def plot_time_area(data, time_limit):
@@ -22,7 +22,7 @@ def plot_time_area(data, time_limit):
     sns.set_theme(style=THEME)
     x_axis = [i for i in range(start,finish,2)]
     y_axis = []
-    for alg in ALGORITMS:
+    for alg in ALGORITHMS:
         d = []
         for i in range(start,finish,2):
             sub = data[str(i)][alg]['cpu_time']
@@ -36,25 +36,25 @@ def plot_time_area(data, time_limit):
         std_of_mean.append([])
         for i in range(len(y_axis[alg])):
             std_of_mean[alg].append(np.std(y_axis[alg][i], ddof=1) / np.sqrt(np.size(y_axis[alg][i])))
-    cbs = np.array([np.mean(x) for x in y_axis[0]])
-    cbs_disjoint = np.array([np.mean(x) for x in y_axis[1]])
+    cbs_astar = np.array([np.mean(x) for x in y_axis[0]])
+    cbs_sipp = np.array([np.mean(x) for x in y_axis[1]])
     data = pd.DataFrame(
         data={
             'agents': x_axis,
-            'cbs': cbs,
-            'cbs_disjoint': cbs_disjoint
+            'cbs_astar': cbs_astar,
+            'cbs_sipp': cbs_sipp
         }
     )
     plt = sns.lineplot(data=data.set_index('agents'), linewidth=2.5)
     plt.set(xlabel='Number of agents', ylabel='CPU time (s)')
     plt.axes.set_xticks(np.arange(start, finish, 2.0))
     # CBS area
-    lower = cbs - std_of_mean[0]; upper = cbs + std_of_mean[0]
+    lower = cbs_astar - std_of_mean[0]; upper = cbs_astar + std_of_mean[0]
     plt.plot(x_axis, lower, color='tab:blue', alpha=0.2)
     plt.plot(x_axis, upper, color='tab:blue', alpha=0.2)
     plt.fill_between(x_axis, lower, upper, color='tab:blue', alpha=0.2)
     # CBS disjoint area
-    lower = cbs_disjoint - std_of_mean[1]; upper = cbs_disjoint + std_of_mean[1]
+    lower = cbs_sipp - std_of_mean[1]; upper = cbs_sipp + std_of_mean[1]
     plt.plot(x_axis, lower, color='tab:orange', alpha=0.2)
     plt.plot(x_axis, upper, color='tab:orange', alpha=0.2)
     plt.fill_between(x_axis, lower, upper, color='tab:orange', alpha=0.2)
@@ -66,11 +66,11 @@ def plot_success_rate(data, time_limit):
     """
     keys = list(data.keys())
     start,finish = int(keys[0]), int(keys[-1])+1
-    max_tests = len(data[str(start)]['cbs']['cpu_time'])
+    max_tests = len(data[str(start)]['cbs_astar']['cpu_time'])
     sns.set_theme(style=THEME)
     x_axis = [i for i in range(start,finish,2)]
     d = {}
-    for alg in ALGORITMS:
+    for alg in ALGORITHMS:
         d[alg] = []
         for agents in data:
             success = 0
@@ -81,8 +81,8 @@ def plot_success_rate(data, time_limit):
     data = pd.DataFrame(
         data={
             'agents': x_axis,
-            'cbs': d['cbs'],
-            'cbs_disjoint': d['cbs_disjoint']
+            'cbs_astar': d['cbs_astar'],
+            'cbs_sipp': d['cbs_sipp']
         }
     )
     plt = sns.lineplot(data=data.set_index('agents'), linewidth=2.5)
@@ -99,7 +99,7 @@ def plot_expanded_nodes(data, default_nodes= 1000):
     sns.set_theme(style=THEME)
     x_axis = [i for i in range(start,finish,2)]
     y_axis = []
-    for alg in ALGORITMS:
+    for alg in ALGORITHMS:
         d = []
         for i in range(start,finish,2):
             sub = data[str(i)][alg]['expanded']
@@ -109,8 +109,8 @@ def plot_expanded_nodes(data, default_nodes= 1000):
     data = pd.DataFrame(
         data={
             'agents': x_axis,
-            'cbs': y_axis[0],
-            'cbs_disjoint': y_axis[1]
+            'cbs_astar': y_axis[0],
+            'cbs_sipp': y_axis[1]
         }
     )
     plt = sns.lineplot(data=data.set_index('agents'), linewidth=2.5)

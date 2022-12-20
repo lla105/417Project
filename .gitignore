@@ -1,7 +1,2 @@
-__pycache__/cbs.cpython-311.pyc
-__pycache__/graph_generation.cpython-311.pyc
-__pycache__/independent.cpython-311.pyc
-__pycache__/prioritized.cpython-311.pyc
-__pycache__/random_instance.cpython-311.pyc
-__pycache__/single_agent_planner.cpython-311.pyc
-__pycache__/visualize.cpython-311.pyc
+__pycache__/
+benchmark/

@@ -101,29 +101,33 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    result_file = open("results.csv", "w", buffering=1)
     if args.benchmark:
         # Benchmark mode
         if args.benchmark == "random":
-            map_size = 10;obstacles_dist = .05;max_agents=20
-            experiment = 0;max_time = 2*60
-            result = {};samples = 25
+            map_size = 10;obstacles_dist = .05;max_agents=16
+            experiment = 0;max_time = 40
+            result = {}
+            samples = 25
             start_agents = 4
-            for agents in range(start_agents, max_agents,2):
+            for agents in range(start_agents, max_agents+1,2):
                 result[agents] = {
-                    'cbs': {'cpu_time':[-1]*samples, 'expanded':[-1]*samples},
-                    'cbs_disjoint': {'cpu_time':[-1]*samples, 'expanded':[-1]*samples},
+                    'cbs_astar': {'cpu_time':[-1]*samples, 'expanded':[-1]*samples},
+                    'cbs_sipp': {'cpu_time':[-1]*samples, 'expanded':[-1]*samples},
                 }
                 for _ in range(samples):
                     print("Samples {} with {} agents".format(_, agents))
-                    my_map, starts, goals = random_map(map_size, map_size, agents, obstacles_dist)
+                    # only benchmark on maps that can be solved
+                    my_map, starts, goals = correct_random_map(map_size, map_size, agents, obstacles_dist)
                     filename = "benchmark/max_agents_{}/test_{}.txt".format(agents, _)
                     os.makedirs(os.path.dirname(filename), exist_ok=True)
                     save_map(my_map, starts, goals, filename)
-                    for alg in ['cbs','cbs_disjoint']:
-                        solver =  CBSSolver_Astar(my_map,starts,goals,max_time)
+                    for alg in ['cbs_astar','cbs_sipp']:
+                        if alg == 'cbs_astar':
+                            solver = CBSSolver_Astar(my_map,starts,goals,max_time)
+                        else:
+                            solver = CBSSolver_SIPP(my_map,starts,goals,max_time)
                         try:
-                            solver.find_solution(alg=='cbs_disjoint')
+                            solver.find_solution(disjoint=True)
                             result[agents][alg]['cpu_time'][_] = round(timer.time() - solver.start_time,2)
                         except BaseException as e:
                             # Timeout
@@ -132,26 +136,31 @@ if __name__ == '__main__':
             with open('benchmark/result.json', 'w') as outfile:
                 json.dump(result, outfile)
         if args.benchmark == "success":
-            obstacles_dist = .05; map_size = 20; max_agents = 26
+            map_size = 10;obstacles_dist = .05;max_agents=16
+            max_time = 40
             samples = 25
-            time_limit = 5*60
+            start_agents = 4
             result = {}
+            #we dont care about generating a correct random map if we're testing success rate
             map, starts, goals = random_map(map_size, map_size, max_agents, obstacles_dist)
             save_map(map, starts, goals, "benchmark/{}_agents_success.txt".format(max_agents))
-            for agents in range(4,max_agents + 1,2):
+            for agents in range(start_agents,max_agents + 1,2):
                 result[agents] = {
-                    'cbs': {'cpu_time': [-1] * samples, 'expanded': [-1] * samples},
-                    'cbs_disjoint': {'cpu_time': [-1] * samples, 'expanded': [-1] * samples},
+                    'cbs_astar': {'cpu_time': [-1] * samples, 'expanded': [-1] * samples},
+                    'cbs_sipp': {'cpu_time': [-1] * samples, 'expanded': [-1] * samples},
                 }
                 for i in range(samples):
                     # take first i agents
                     random.shuffle(starts);sub_goals = goals[0:agents]
                     random.shuffle(goals);sub_starts = starts[0:agents]
                     print("sample {} with {} agents".format(i,agents))
-                    for alg in ['cbs','cbs_disjoint']:
-                        solver = CBSSolver_Astar(map,sub_starts,sub_goals,time_limit)
+                    for alg in ['cbs_astar','cbs_sipp']:
+                        if alg == 'cbs_astar':
+                            solver = CBSSolver_Astar(my_map,starts,goals,max_time)
+                        else:
+                            solver = CBSSolver_SIPP(my_map,starts,goals,max_time)
                         try:
-                            solver.find_solution(alg=='cbs_disjoint')
+                            solver.find_solution(disjoint=True)
                             result[agents][alg]['cpu_time'][i] = round(timer.time() - solver.start_time, 2)
                         except BaseException as e:
                             # Timeout
@@ -162,6 +171,7 @@ if __name__ == '__main__':
                 json.dump(result, outfile)
 
     else:
+        result_file = open("results.csv", "w", buffering=1)
         # Otherwise, run the algorithm
         files = ["random.generated"] if args.random else glob.glob(args.instance)
         for file in files:
@@ -198,11 +208,11 @@ if __name__ == '__main__':
 
             cost = get_sum_of_cost(paths)
             result_file.write("{},{}\n".format(file, cost))
-
+            result_file.close()
             if not args.batch:
                 print("***Test paths on a simulation***")
                 animation = Animation(my_map, starts, goals, paths)
                 #animation.save("output.mp4", 1.0)
                 animation.show()
     print("***Done***")
-    result_file.close()
+    

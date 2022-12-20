@@ -51,11 +51,11 @@ class PrioritizedPlanningSolver(object):
             result.append(path)
 
             ##############################
-            # Task 2: Add constraints here
-            #         Useful variables:
-            #            * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
-            #            * self.num_of_agents has the number of total agents
-            #            * constraints: array of constraints to consider for future A* searches
+            # Add constraints here
+            # Useful variables:
+            #    * path contains the solution path of the current (i'th) agent, e.g., [(1,1),(1,2),(1,3)]
+            #    * self.num_of_agents has the number of total agents
+            #    * constraints: array of constraints to consider for future A* searches
 
             ##############################
 

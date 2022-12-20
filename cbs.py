@@ -312,13 +312,13 @@ class CBSSolver_Astar(object):
 
     def print_results(self, node):
         pass
-        #if DEBUG:
-        print("\n Found a solution! \n")
-        CPU_time = timer.time() - self.start_time
-        print("CPU time (s):    {:.2f}".format(CPU_time))
-        print("Sum of costs:    {}".format(get_sum_of_cost(node['paths'])))
-        print("Expanded nodes:  {}".format(self.num_of_expanded))
-        print("Generated nodes: {}".format(self.num_of_generated))
+        if DEBUG:
+            print("\n Found a solution! \n")
+            CPU_time = timer.time() - self.start_time
+            print("CPU time (s):    {:.2f}".format(CPU_time))
+            print("Sum of costs:    {}".format(get_sum_of_cost(node['paths'])))
+            print("Expanded nodes:  {}".format(self.num_of_expanded))
+            print("Generated nodes: {}".format(self.num_of_generated))
 
 """
 SIPP+CBS implementation  
@@ -505,8 +505,8 @@ class CBSSolver_SIPP(object):
     def find_solution(self, disjoint=True):
         self.start_time = timer.time()
         start = HighLevelNode()
-        e_nodes = 0
-        g_nodes = 0
+        self.num_of_expanded = 0
+        self.num_of_generated = 0
         
         start.constraint_dict = {}
         
@@ -525,7 +525,7 @@ class CBSSolver_SIPP(object):
 
         while self.open_set  and timer.time() - self.start_time < self.max_time:
             P = min(self.open_set)
-            e_nodes += 1
+            self.num_of_expanded += 1
             self.open_set -= {P}
             self.closed_set |= {P}
 
@@ -534,8 +534,8 @@ class CBSSolver_SIPP(object):
             #found solution
             if not conflict_dict:
                 # print("solution found")
-                # print("CBS g_nodes: ", g_nodes)
-                # print("CBS e_nodes: ", e_nodes)
+                # print("CBS self.num_of_generated: ", self.num_of_generated)
+                # print("CBS self.num_of_expanded: ", self.num_of_expanded)
                 result = self.process_result(self.generate_plan(P.solution))
                 
                 self.CPU_time = timer.time() - self.start_time
@@ -582,10 +582,10 @@ class CBSSolver_SIPP(object):
                 # TODO: ending condition
                 if new_node not in self.closed_set:
                     self.open_set |= {new_node}
-                    g_nodes += 1
+                    self.num_of_generated += 1
                     #print("Added new node")
         #print("Solution NOT found")
-        return None
+        return BaseException("Path not found (SIPP)")
 
     def generate_plan(self, solution):
         plan = []
